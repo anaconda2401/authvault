@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Auth Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-md p-8 bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
+        <h2 class="text-3xl font-bold mb-2 text-center text-blue-500">Create Account</h2>
+        <p class="text-slate-400 text-center mb-6 text-sm">Enter your invite key to join.</p>
+        
+        <div id="message" class="hidden mb-6 p-4 rounded-lg text-sm text-center font-medium"></div>
+
+        <form id="register-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Username</label>
+                <input type="text" id="username" required placeholder="jdoe"
+                    class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 focus:border-blue-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Email</label>
+                <input type="email" id="email" required placeholder="you@example.com"
+                    class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 focus:border-blue-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" minlength="6"
+                    class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 focus:border-blue-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Invite Key</label>
+                <input type="text" id="invite-key" required placeholder="Enter key provided by admin"
+                    class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 focus:border-purple-500 ring-1 ring-purple-900/50 outline-none transition">
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold shadow-lg transition transform hover:scale-[1.02] mt-4">
+                Register
+            </button>
+        </form>
+
+        <p class="mt-6 text-center text-slate-500 text-sm">
+            Already have an account? <a href="/" class="text-blue-400 hover:underline">Log in</a>
+        </p>
+    </div>
+
+    <script type="module" src="/src/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth Vault Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center">
+
+  <div class="w-full max-w-md p-8 bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
+
+    <!-- Title -->
+    <h2 class="text-3xl font-bold mb-8 text-center text-blue-500 tracking-tight">
+      Auth Vault
+    </h2>
+
+    <!-- Message -->
+    <div
+      id="message"
+      class="hidden mb-6 p-4 rounded-lg text-sm text-center font-medium"
+    ></div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="space-y-6">
+
+      <div>
+        <label class="block text-sm font-medium text-slate-400 mb-2">
+          Email Address
+        </label>
+        <input
+          type="email"
+          id="email"
+          required
+          class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600
+                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                 outline-none transition"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-400 mb-2">
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          required
+          class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600
+                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                 outline-none transition"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3
+               rounded-lg font-bold shadow-lg shadow-blue-500/30
+               transition transform hover:scale-[1.02]"
+      >
+        Sign In
+      </button>
+
+    </form>
+
+    <!-- Footer Links -->
+    <div class="flex justify-between mt-6 text-sm text-slate-400">
+      <a href="/register.html" class="hover:text-blue-400 transition">
+        Create Account
+      </a>
+      <a href="/admin/" class="hover:text-blue-400 transition">
+        Admin Dashboard
+      </a>
+    </div>
+
+  </div>
+
+  <script type="module" src="/src/login.js"></script>
+</body>
+</html>
