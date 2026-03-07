@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Vault</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: #1e1e1e;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            width: 100%;
+            max-width: 350px;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 6px;
+            border: none;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input {
+            background: #2d2d2d;
+            color: #ffffff;
+            border: 1px solid #404040;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Auth Vault</h2>
+        <form action="/.netlify/functions/login" method="POST">
+            <input type="hidden" name="redirect_uri" id="redirect_uri">
+            <input type="email" name="email" placeholder="admin@example.com" required>
+            <input type="password" name="password" placeholder="Passphrase" required>
+            <button type="submit">Authenticate</button>
+        </form>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('redirect_uri').value = urlParams.get('redirect_uri') || 'https://default.vercel.app';
+    </script>
+</body>
+</html>
