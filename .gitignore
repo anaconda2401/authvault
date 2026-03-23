@@ -7,3 +7,5 @@ jwtRS256.key.pub
 
 # Dependencies
 node_modules/
+package-lock.json
+
