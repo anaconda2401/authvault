@@ -7,10 +7,11 @@ Built using Netlify Serverless Functions and Supabase, it relies on a pure clien
 ## 🚀 Key Features
 
 * **Cross-Domain Compatibility:** Seamlessly authenticate users across entirely different top-level domains.
+* **Dynamic Whitelisting:** Add or remove allowed client applications instantly via a Supabase database table—no code changes or Netlify redeploys required.
 * **Zero-Middleware Frontend Flow:** Client applications only need a drop-in JavaScript snippet to enforce authentication.
-* **Asymmetric Encryption (RS256):** Uses a Private/Public key pair. Auth Vault signs the tokens, and client apps or APIs can independently verify them using the exposed public key endpoint (`/jwks`).
+* **Asymmetric Encryption (RS256):** Uses a Private/Public key pair. Auth Vault signs the tokens, and client apps or APIs can independently verify them using the exposed public key.
 * **Serverless Architecture:** Fast, highly available, and requires zero active server maintenance.
-* **Secure Redirects:** Tokens are delivered via URL Hash Fragments (`#access_token=`) to prevent query string logging, and cross-origin checks prevent open-redirect attacks.
+* **Secure Redirects:** Tokens are delivered via URL Hash Fragments (`#access_token=`) to prevent query string logging, and cross-origin database checks prevent open-redirect attacks.
 
 ## 🏗️ Architecture Stack
 
@@ -51,56 +52,83 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
 -----END PUBLIC KEY-----"
 ```
 
-### 4. Configure Allowed Origins
-To prevent unauthorized domains from requesting tokens, update the `allowedOrigins` array in both `netlify/functions/login.js` and `netlify/functions/authorize.js` with your specific application URLs.
+### 4. Configure Allowed Origins (Supabase Database)
+To prevent unauthorized domains from requesting tokens, Auth Vault checks a database table before authenticating. Run this SQL command in your Supabase SQL Editor to set up the whitelist:
 
-```javascript
-const allowedOrigins = [
-  "http://localhost:3000",
-  "[https://your-frontend-app.vercel.app](https://your-frontend-app.vercel.app)",
-  "[https://your-backend-api.onrender.com](https://your-backend-api.onrender.com)"
-];
+```sql
+CREATE TABLE allowed_origins (
+  id SERIAL PRIMARY KEY,
+  origin TEXT NOT NULL UNIQUE
+);
+
+-- Insert your authorized application URLs
+INSERT INTO allowed_origins (origin) VALUES 
+  ('http://localhost:5000'),
+  ('[https://your-frontend-app.vercel.app](https://your-frontend-app.vercel.app)'),
+  ('[https://your-backend-api.onrender.com](https://your-backend-api.onrender.com)');
 ```
+*Note: You can add new apps to this table at any time to instantly grant them SSO access.*
 
 ### 5. Deploy
 Connect this repository to Netlify and deploy. Ensure the `Publish directory` is set to `public` and the `Functions directory` is set to `netlify/functions`. No build command is required.
 
-## 💻 Client-Side Integration
+## 💻 Integration Guides
 
-To protect a frontend application, drop the following JavaScript snippet into the `<head>` of your HTML document. 
+### Frontend Integration (JavaScript)
+To protect a frontend application, drop the following JavaScript snippet into your HTML document. 
 
 ```javascript
-const AUTH_VAULT_URL = "[https://your-auth-vault.netlify.app](https://your-auth-vault.netlify.app)"; 
-const CURRENT_APP_URL = window.location.origin + window.location.pathname;
+const AUTH_URL = "[https://your-auth-vault.netlify.app](https://your-auth-vault.netlify.app)"; 
+const APP_URL = window.location.origin + window.location.pathname;
 
-function enforceAuthentication() {
-    // 1. Capture token from redirect hash
-    if (window.location.hash.includes('access_token=')) {
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        const token = params.get('access_token');
-        if (token) {
-            localStorage.setItem('auth_vault_token', token);
-            window.history.replaceState(null, null, window.location.pathname);
-        }
-    }
-
-    // 2. Verify token exists
-    const token = localStorage.getItem('auth_vault_token');
-    if (!token) {
-        window.location.href = `${AUTH_VAULT_URL}/.netlify/functions/authorize?redirect_uri=${encodeURIComponent(CURRENT_APP_URL)}`;
-        return false;
-    }
-    
-    document.body.style.display = 'flex'; // Unhide UI
-    return true;
+// 1. Capture token from redirect hash
+if (window.location.hash.includes('access_token=')) {
+    localStorage.setItem('auth_vault_token', new URLSearchParams(window.location.hash.substring(1)).get('access_token'));
+    window.history.replaceState(null, null, window.location.pathname);
 }
 
-// Halt script execution if unauthenticated
-const IS_AUTHENTICATED = enforceAuthentication();
+// 2. Gatekeeper Check
+if (!localStorage.getItem('auth_vault_token')) {
+    window.location.href = `${AUTH_URL}/.netlify/functions/authorize?redirect_uri=${encodeURIComponent(APP_URL)}`;
+} else {
+    document.body.style.display = 'flex'; // Unhide UI
+    // Initialize your app here
+}
+
+function triggerLogout() {
+    localStorage.removeItem('auth_vault_token');
+    window.location.href = `${AUTH_URL}/.netlify/functions/logout?redirect_uri=${encodeURIComponent(APP_URL)}`;
+}
 ```
 *(Ensure your `<body>` tag has `style="display: none;"` to prevent a flash of unauthenticated content before the redirect occurs).*
+
+### Backend API Verification (Python/Flask Example)
+Because Auth Vault uses RS256, your backend APIs do not need to contact the Auth Vault server to verify users. They only need the Public Key.
+
+```python
+import jwt
+from flask import request
+
+AUTH_VAULT_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----"""
+
+def verify_token(req):
+    auth_header = req.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return False
+        
+    token = auth_header.split(" ")[1]
+    try:
+        # Securely decode using the public key and RS256
+        payload = jwt.decode(token, AUTH_VAULT_PUBLIC_KEY, algorithms=["RS256"])
+        return payload # Contains user ID and email
+    except Exception:
+        return False
+```
 
 ## 🔒 Security Notes
 
 * **Never** share or commit your `JWT_PRIVATE_KEY` or `.env` file.
 * Tokens are stored in memory/localStorage. Ensure your client applications are protected against Cross-Site Scripting (XSS) attacks.
+* Keep your Supabase `allowed_origins` table strict. Do not use wildcards.
